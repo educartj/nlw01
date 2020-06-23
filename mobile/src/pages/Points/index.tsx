@@ -164,7 +164,7 @@ const Points: React.FC = () => {
                     <Image
                       style={styles.mapMarkerImage}
                       //source={{ uri: 'https://images.unsplash.com/photo-1559310589-2673bfe16970?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=200&q=60'}}
-                      source={{ uri: point.image}}
+                      source={{ uri: point.image_url}}
                     />
                     <Text style={styles.mapMarkerTitle}>
                       {point.name}</Text>
