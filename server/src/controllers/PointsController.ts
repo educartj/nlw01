@@ -16,13 +16,18 @@ class PointsController {
       .where('uf', String(uf))
       .distinct()
       .select('points.*');
-      console.log(points)
+      const serializedPoints = points.map(point => {
+        return {
+          ...point,
+          image_url: `http://192.168.100.70:3333/uploads/${point.image}`,
+        };
+      });
 
       // select distinct `points`.* from `points`
       //  inner join `point_items` on `points`.`id` = `point_items`.`point_id`
       //  where `point_items`.`item_id` in (NaN) and `city` = 'Descoberto' and `uf` = 'MG'
 
-    return response.json(points);
+    return response.json(serializedPoints);
 
   }
 
@@ -33,9 +38,13 @@ class PointsController {
     const point = await knex('points').where('id', id).first();
 
     if (!point) {
-      return response.status(400).json({ message: 'erro'});
+      return response.status(400).json({ message: 'Não achou os points'});
     }
 
+    const serializedPoint = {
+      ...point,
+      image_url: `http://192.168.100.70:3333/uploads/${point.image}`,
+    };    
     
     // SELECT * FROM items
     //   JOIN point_items ON items id = point_items.item_id
@@ -44,8 +53,9 @@ class PointsController {
     const items = await knex('items')
     .join('point_items', 'items.id', '=', 'point_items.item_id')
     .where('point_items.point_id', id);
-  
-    return response.json({point, items});
+    //.select('items.title');
+    return response.json({ point: serializedPoint, items });
+
   }
 
 
@@ -64,7 +74,7 @@ class PointsController {
       const trx = await knex.transaction();// Se a 2ª await não funcionar a 1 await não completa 
       
       const point = {
-        image: 'https://images.unsplash.com/photo-1475275083424-b4ff81625b60?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60',
+        image:request.file.filename,
         name,
         email,
         whatsapp,
@@ -78,7 +88,10 @@ class PointsController {
     
       const point_id = insertedIds[0];
     
-      const pointItems = items.map((item_id: number) =>{
+      const pointItems = items
+      .split(',')
+      .map((item: string) => Number(item.trim()))
+      .map((item_id: number) =>{
         return {
           item_id,
           point_id,
@@ -95,6 +108,17 @@ class PointsController {
         ...point, 
       });
   }
+  // async delete(request: Request, response: Response) {
+  //   const { id } = request.params;
+
+  //   const point = await knex('points').where('id', id).delete();
+
+  //   if (!point) {
+  //     return response.status(400).json({ message: 'Point not found.' });
+  //   }
+
+  //   return response.json({ msg: 'successfully deleted' });
+  // }
 
 
 }
