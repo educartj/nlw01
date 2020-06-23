@@ -11,6 +11,7 @@ import { Map, TileLayer, Marker } from 'react-leaflet';
 import { LeafletMouseEvent } from 'leaflet';
 import api from '../../services/api';
 import ibge from '../../services/ibge';
+import Dropzone from '../../components/Dropzone';
 import './styles.css';
 
 import logo from '../../assets/logo.svg';
@@ -40,6 +41,7 @@ const CreatePoint = () =>{
     email: '',
     whatsapp: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File>();
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedUf, setSelectedUf] = useState<string>('0');
   const [selectedCity, setSelectedCity] = useState<string>('0');
@@ -160,16 +162,20 @@ const CreatePoint = () =>{
     const city = selectedCity;
     const [latitude, longitude] = selectedPosition;
     const items = selectedItems;
-    const data = {
-      name,
-      email,
-      whatsapp,
-      latitude,
-      longitude,
-      uf,
-      city,
-      items
-    }
+    const data = new FormData();
+
+      data.append('name', name);
+      data.append('email', email);
+      data.append('whatsapp', whatsapp);
+      data.append('latitude', String(latitude));
+      data.append('longitude', String(longitude));
+      data.append('uf', selectedUf);
+      data.append('city', selectedCity);
+      data.append('items', selectedItems.join(','));
+      if (selectedFile) {
+        data.append('image', selectedFile);
+      }
+
     await api.post('points', data);
     alert('Cadrastrado');
     history.push('/');
@@ -235,7 +241,7 @@ const CreatePoint = () =>{
         <br /> ponto de coleta
       </h1>
 
-      {/* <Dropzone onFileUploaded={setSelectedFile} /> */}
+      <Dropzone onFileUploaded={setSelectedFile} />
 
       <fieldset>
         <legend>
